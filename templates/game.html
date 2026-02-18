@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Физический симулятор игровой физики</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0c0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Анимированный фон с компьютерами */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.1;
+        }
+        
+        .floating-object {
+            position: absolute;
+            filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.3));
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .object1 { left: 5%; animation-duration: 25s; }
+        .object2 { left: 25%; animation-duration: 30s; }
+        .object3 { left: 45%; animation-duration: 22s; }
+        .object4 { left: 65%; animation-duration: 28s; }
+        .object5 { left: 85%; animation-duration: 35s; }
+        
+        /* Градиентный оверлей */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, rgba(102, 176, 255, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(255, 170, 102, 0.15) 0%, transparent 50%);
+            z-index: -1;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 12, 15, 0.7);
+            border-radius: 40px;
+            padding: 40px;
+            border: 1px solid rgba(102, 176, 255, 0.3);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #66b0ff, #8a6eff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(102, 176, 255, 0.5);
+            letter-spacing: 4px;
+            animation: titleGlow 3s ease-in-out infinite;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #66b0ff, #ffaa66, #66b0ff, transparent);
+            animation: lineMove 3s linear infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 170, 102, 0.5)); }
+        }
+        
+        @keyframes lineMove {
+            0% { background-position: -300px 0; }
+            100% { background-position: 300px 0; }
+        }
+        
+        .back-btn {
+            background: rgba(45, 55, 72, 0.8);
+            border: 2px solid #4a5568;
+            color: #e0e0e0;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .back-btn:hover {
+            background: #4a5568;
+            border-color: #66b0ff;
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 176, 255, 0.3);
+        }
+        
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(26, 32, 44, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(102, 176, 255, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: #66b0ff;
+            box-shadow: 0 12px 40px rgba(102, 176, 255, 0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #66b0ff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        .game-container {
+            background: rgba(26, 32, 44, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid #66b0ff;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(102, 176, 255, 0.2);
+        }
+        
+        .challenge-card {
+            background: linear-gradient(135deg, #2d3748, #1e293b);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 6px solid #ffaa66;
+        }
+        
+        .challenge-title {
+            color: #ffaa66;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+        }
+        
+        .level-badge {
+            background: #ffaa66;
+            color: #0a0c0f;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .location-badge {
+            background: #66b0ff;
+            color: #0a0c0f;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-left: 10px;
+        }
+        
+        .challenge-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+            font-family: 'Fira Code', monospace;
+            white-space: pre-wrap;
+            background: #1a1e24;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #4a5568;
+        }
+        
+        .params-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            border: 1px solid rgba(102, 176, 255, 0.2);
+        }
+        
+        .param-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(102, 176, 255, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        
+        .param-item:hover {
+            background: rgba(102, 176, 255, 0.2);
+            transform: scale(1.02);
+        }
+        
+        .param-name {
+            color: #66b0ff;
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .param-value {
+            font-size: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #ffaa66;
+        }
+        
+        .hint-box {
+            background: rgba(255, 170, 102, 0.1);
+            border: 1px dashed #ffaa66;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #ffaa66;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hint-box::before {
+            content: '💡';
+            position: absolute;
+            left: -10px;
+            top: -10px;
+            font-size: 3rem;
+            opacity: 0.1;
+        }
+        
+        .simulation-area {
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px 0;
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            border: 3px solid #4a5568;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+        }
+        
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 15px;
+        }
+        
+        .info-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffaa66;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: 2px solid #ffaa66;
+            box-shadow: 0 0 20px rgba(255, 170, 102, 0.3);
+            z-index: 100;
+            white-space: nowrap;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        
+        .input-field {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .input-field input {
+            width: 100%;
+            background: rgba(26, 32, 44, 0.9);
+            border: 2px solid #66b0ff;
+            color: white;
+            padding: 18px 25px;
+            font-size: 1.3rem;
+            border-radius: 15px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        .input-field input:focus {
+            outline: none;
+            border-color: #ffaa66;
+            box-shadow: 0 0 20px rgba(255, 170, 102, 0.5);
+            transform: scale(1.02);
+        }
+        
+        .input-field input::placeholder {
+            color: #4a5568;
+            font-style: italic;
+        }
+        
+        .check-btn {
+            background: linear-gradient(45deg, #66b0ff, #8a6eff);
+            border: none;
+            color: white;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(102, 176, 255, 0.4);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .check-btn:hover:not(:disabled) {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(102, 176, 255, 0.6);
+        }
+        
+        .check-btn:active:not(:disabled) {
+            transform: translateY(-2px) scale(0.98);
+        }
+        
+        .check-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            text-align: center;
+            padding: 25px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            margin: 20px 0;
+            display: none;
+            animation: slideIn 0.5s;
+            font-weight: 600;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .message.success {
+            background: linear-gradient(135deg, #22543d, #276749);
+            border: 2px solid #48bb78;
+            display: block;
+            box-shadow: 0 0 30px rgba(72, 187, 120, 0.3);
+        }
+        
+        .message.failure {
+            background: linear-gradient(135deg, #742a2a, #9b2c2c);
+            border: 2px solid #f56565;
+            display: block;
+            box-shadow: 0 0 30px rgba(245, 101, 101, 0.3);
+        }
+        
+        .footer {
+            margin-top: 50px;
+            color: #718096;
+            font-size: 1rem;
+            border-top: 1px solid rgba(102, 176, 255, 0.2);
+            padding-top: 25px;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .footer p {
+            margin: 8px 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .date {
+            color: #ffaa66;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffaa66;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 1s ease-out forwards;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-50px) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        /* Анимация для возврата шарика */
+        @keyframes teleport {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .teleport-effect {
+            animation: teleport 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-background">
+        <svg class="floating-object object1" width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="20" height="16" rx="2" stroke="#66b0ff" stroke-width="1.5"/>
+            <path d="M8 20L16 20" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="10" r="2" fill="#ffaa66"/>
+        </svg>
+        
+        <svg class="floating-object object2" width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20L20 20" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 4L12 16" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7 9L17 9" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7 13L17 13" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        
+        <svg class="floating-object object3" width="180" height="180" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6L20 6" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 12L20 12" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 18L20 18" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="2" fill="#ffaa66"/>
+        </svg>
+    </div>
+    
+    <div class="gradient-overlay"></div>
+    
+    <div class="container">
+        <button class="back-btn" onclick="location.href='/'">← ВЕРНУТЬСЯ НА ГЛАВНУЮ</button>
+        
+        <h1>ФИЗИЧЕСКИЙ СИМУЛЯТОР</h1>
+        
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-label">ТЕКУЩИЙ СЧЕТ</div>
+                <div class="stat-value" id="currentScore">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ЛУЧШИЙ РЕЗУЛЬТАТ</div>
+                <div class="stat-value" id="bestScore">{{ best_score }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">УРОВЕНЬ</div>
+                <div class="stat-value" id="currentLevel">1</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ЛОКАЦИЯ</div>
+                <div class="stat-value" id="currentLocation">{{ challenge.location.name }}</div>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div class="challenge-card">
+                <div class="challenge-title">
+                    <span id="challengeName">{{ challenge.name }}</span>
+                    <span class="level-badge" id="levelBadge">УРОВЕНЬ 1</span>
+                    <span class="location-badge" id="locationBadge">{{ challenge.location.name }}</span>
+                </div>
+                
+                <div class="challenge-desc" id="challengeDesc">
+                    {{ challenge.description }}
+                </div>
+                
+                <div class="params-box" id="paramsBox">
+                    {% for key, value in challenge.params.items() %}
+                    <div class="param-item">
+                        <div class="param-name">{{ key }}</div>
+                        <div class="param-value">{{ value }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="hint-box" id="formulaHint">
+                    💡 Подсказка: {{ challenge.hint }}
+                </div>
+            </div>
+            
+            <!-- Игровая область с физикой -->
+            <div class="simulation-area" id="simulationArea">
+                <canvas id="gameCanvas" width="1000" height="360"></canvas>
+                <div class="info-message" id="infoMessage">
+                    ШАРИК ПЕРЕПРЫГНЕТ, КОГДА ТЫ ПРАВИЛЬНО РЕШИШЬ ЗАДАЧУ
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <div class="input-field">
+                    <input type="number" id="userValue" step="0.01" placeholder="Введите {{ challenge.variable }}" autofocus>
+                </div>
+                <button class="check-btn" onclick="checkAnswer()" id="checkBtn">ПРОВЕРИТЬ</button>
+            </div>
+            
+            <div id="message" class="message"></div>
+        </div>
+        
+        <div class="footer">
+            <p>Создали студенты Томского Техникума Информационных Технологий 452 группы Строганов Максим и Мартыненко Степан</p>
+            <p class="date">2026 год</p>
+        </div>
+    </div>
+    
+    <script>
+        // Физическая симуляция
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const simulationArea = document.getElementById('simulationArea');
+        
+        // Константы
+        const START_X = 150;
+        const START_Y = 300;
+        const GROUND_Y = 330;
+        const BALL_RADIUS = 20;
+        
+        // Физические параметры
+        let physics = {
+            x: START_X,
+            y: START_Y,
+            radius: BALL_RADIUS,
+            grounded: true,
+            isJumping: false
+        };
+        
+        // Препятствие
+        let obstacle = {
+            x: 600,
+            y: GROUND_Y - 80,
+            width: 40,
+            height: 80,
+            color: '#ffaa66'
+        };
+        
+        // Состояние игры
+        let gameActive = true;
+        let currentScore = 0;
+        let currentLevel = 1;
+        let bestScore = {{ best_score }};
+        let gamesPlayed = {{ games_played }};
+        let jumpAnimationActive = false;
+        let jumpComplete = false;
+        let pendingNewChallenge = null;
+        
+        // Параметры локации
+        let currentLocation = {{ challenge.location|tojson }};
+        
+        // Частицы для эффектов
+        let particles = [];
+        
+        // Обновление отображения
+        document.getElementById('currentScore').textContent = currentScore;
+        document.getElementById('bestScore').textContent = bestScore;
+        document.getElementById('currentLevel').textContent = currentLevel;
+        document.getElementById('currentLocation').textContent = currentLocation.name;
+        
+        // Применяем стили локации
+        simulationArea.style.background = currentLocation.background;
+        
+        // Обновляем препятствие
+        obstacle.height = {{ challenge.obstacle_height }};
+        obstacle.y = GROUND_Y - obstacle.height;
+        obstacle.color = currentLocation.obstacle_color;
+        
+        // Функция возврата шарика на старт
+        function returnToStart() {
+            return new Promise((resolve) => {
+                // Эффект телепортации
+                const ballElement = canvas;
+                ballElement.classList.add('teleport-effect');
+                
+                // Создаем частицы телепортации
+                for (let i = 0; i < 30; i++) {
+                    createParticles(physics.x, physics.y);
+                }
+                
+                setTimeout(() => {
+                    physics.x = START_X;
+                    physics.y = START_Y;
+                    physics.grounded = true;
+                    physics.isJumping = false;
+                    jumpAnimationActive = false;
+                    
+                    ballElement.classList.remove('teleport-effect');
+                    
+                    // Еще частицы на новом месте
+                    for (let i = 0; i < 20; i++) {
+                        createParticles(START_X, START_Y);
+                    }
+                    
+                    resolve();
+                }, 500);
+            });
+        }
+        
+        function performJumpAnimation() {
+            jumpAnimationActive = true;
+            physics.isJumping = true;
+            jumpComplete = false;
+            
+            const jumpStartX = physics.x;
+            const jumpStartY = physics.y;
+            
+            // Параметры прыжка
+            const targetX = obstacle.x + obstacle.width + physics.radius + 50;
+            const jumpHeight = obstacle.y - 70; // Прыгаем выше препятствия
+            
+            // Анимация прыжка
+            let jumpTime = 0;
+            const jumpDuration = 1.5; // секунды
+            
+            function jumpStep() {
+                if (!jumpAnimationActive) return;
+                
+                jumpTime += 0.02;
+                
+                if (jumpTime < jumpDuration) {
+                    // Параболическая траектория
+                    const t = jumpTime / jumpDuration;
+                    
+                    // Горизонтальное движение
+                    physics.x = jumpStartX + (targetX - jumpStartX) * t;
+                    
+                    // Вертикальное движение по параболе
+                    const parabola = 4 * t * (1 - t); // Максимум в середине
+                    physics.y = jumpStartY - parabola * (GROUND_Y - jumpHeight - physics.radius);
+                    
+                    // Создаем частицы
+                    createParticles(physics.x, physics.y);
+                    
+                    requestAnimationFrame(jumpStep);
+                } else {
+                    // Завершаем прыжок
+                    physics.x = targetX;
+                    physics.y = GROUND_Y - physics.radius;
+                    physics.grounded = true;
+                    physics.isJumping = false;
+                    jumpAnimationActive = false;
+                    jumpComplete = true;
+                    
+                    // Создаем финальные частицы
+                    for (let i = 0; i < 30; i++) {
+                        createParticles(physics.x, physics.y);
+                    }
+                    
+                    // Если есть новое задание, возвращаем шарик на старт
+                    if (pendingNewChallenge) {
+                        returnToStart().then(() => {
+                            applyNewChallenge(pendingNewChallenge);
+                            pendingNewChallenge = null;
+                        });
+                    } else {
+                        // Просто возвращаем на старт для повторного решения
+                        setTimeout(() => {
+                            returnToStart().then(() => {
+                                // Скрываем информационное сообщение на секунду
+                                const infoMsg = document.getElementById('infoMessage');
+                                infoMsg.style.opacity = '0';
+                                setTimeout(() => {
+                                    infoMsg.style.opacity = '1';
+                                }, 1000);
+                            });
+                        }, 1000);
+                    }
+                }
+            }
+            
+            jumpStep();
+        }
+        
+        function createParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const particle = {
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: (Math.random() - 0.5) * 4,
+                    life: 1.0
+                };
+                particles.push(particle);
+            }
+        }
+        
+        function resetPhysics() {
+            physics.x = START_X;
+            physics.y = START_Y;
+            physics.grounded = true;
+            physics.isJumping = false;
+            jumpAnimationActive = false;
+        }
+        
+        // Применение нового задания
+        function applyNewChallenge(newChallenge) {
+            document.getElementById('challengeName').textContent = newChallenge.name;
+            document.getElementById('challengeDesc').innerHTML = newChallenge.description;
+            document.getElementById('formulaHint').innerHTML = `💡 Подсказка: ${newChallenge.hint}`;
+            
+            // Обновляем локацию
+            currentLocation = newChallenge.location;
+            document.getElementById('currentLocation').textContent = currentLocation.name;
+            document.getElementById('locationBadge').textContent = currentLocation.name;
+            simulationArea.style.background = currentLocation.background;
+            
+            // Обновляем параметры
+            const paramsBox = document.getElementById('paramsBox');
+            paramsBox.innerHTML = '';
+            for (const [key, value] of Object.entries(newChallenge.params)) {
+                paramsBox.innerHTML += `
+                    <div class="param-item">
+                        <div class="param-name">${key}</div>
+                        <div class="param-value">${value}</div>
+                    </div>
+                `;
+            }
+            
+            // Обновляем препятствие
+            obstacle.height = newChallenge.obstacle_height;
+            obstacle.y = GROUND_Y - obstacle.height;
+            obstacle.color = currentLocation.obstacle_color;
+        }
+        
+        // Физическое обновление
+        function updatePhysics() {
+            if (!gameActive) return;
+            
+            // Обновление частиц
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].x += particles[i].vx;
+                particles[i].y += particles[i].vy;
+                particles[i].life -= 0.02;
+                
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        // Отрисовка
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Небо с градиентом
+            ctx.fillStyle = currentLocation.background;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Рисуем объекты на небе
+            if (currentLocation.sky_objects === 'code') {
+                ctx.fillStyle = 'rgba(102, 176, 255, 0.2)';
+                ctx.font = '20px Fira Code';
+                for (let i = 0; i < 10; i++) {
+                    ctx.fillText('</>', 50 + i * 100, 50 + Math.sin(i) * 20);
+                }
+            } else if (currentLocation.sky_objects === 'stars') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                for (let i = 0; i < 50; i++) {
+                    ctx.beginPath();
+                    ctx.arc(100 + i * 20, 50 + Math.sin(i) * 10, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentLocation.sky_objects === 'snow') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                for (let i = 0; i < 30; i++) {
+                    ctx.beginPath();
+                    ctx.arc(100 + i * 30, 50 + i * 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentLocation.sky_objects === 'planets') {
+                ctx.fillStyle = '#ffaa66';
+                ctx.beginPath();
+                ctx.arc(800, 80, 30, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#66b0ff';
+                ctx.beginPath();
+                ctx.arc(200, 60, 20, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (currentLocation.sky_objects === 'neon') {
+                for (let i = 0; i < 10; i++) {
+                    ctx.fillStyle = `hsl(${i * 36}, 100%, 50%)`;
+                    ctx.fillRect(100 + i * 80, 50, 40, 10);
+                }
+            } else if (currentLocation.sky_objects === 'lava') {
+                ctx.fillStyle = 'rgba(255, 100, 0, 0.3)';
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.arc(200 + i * 40, 80 + Math.sin(i) * 10, 10, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentLocation.sky_objects === 'bubbles') {
+                ctx.fillStyle = 'rgba(102, 204, 255, 0.3)';
+                for (let i = 0; i < 25; i++) {
+                    ctx.beginPath();
+                    ctx.arc(150 + i * 30, 60 + Math.cos(i) * 15, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentLocation.sky_objects === 'clouds') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                for (let i = 0; i < 8; i++) {
+                    ctx.beginPath();
+                    ctx.arc(100 + i * 120, 60, 30, 0, Math.PI * 2);
+                    ctx.arc(130 + i * 120, 60, 35, 0, Math.PI * 2);
+                    ctx.arc(70 + i * 120, 60, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (currentLocation.sky_objects === 'rainbow') {
+                const colors = ['#ff0000', '#ffaa00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+                for (let i = 0; i < colors.length; i++) {
+                    ctx.fillStyle = colors[i];
+                    ctx.fillRect(100 + i * 100, 50, 60, 20);
+                }
+            }
+            
+            // Земля
+            ctx.fillStyle = currentLocation.ground_color;
+            ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+            
+            // Текстура земли
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(i, GROUND_Y);
+                ctx.lineTo(i + 15, GROUND_Y + 15);
+                ctx.stroke();
+            }
+            
+            // Препятствие с градиентом
+            const obstacleGradient = ctx.createLinearGradient(
+                obstacle.x, obstacle.y, 
+                obstacle.x + obstacle.width, obstacle.y + obstacle.height
+            );
+            obstacleGradient.addColorStop(0, currentLocation.obstacle_color);
+            obstacleGradient.addColorStop(1, '#dd6b20');
+            ctx.fillStyle = obstacleGradient;
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            
+            // Детали препятствия
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(obstacle.x + 5, obstacle.y + 5, 5, obstacle.height - 10);
+            ctx.fillRect(obstacle.x + obstacle.width - 10, obstacle.y + 5, 5, obstacle.height - 10);
+            
+            // Тень от препятствия
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillRect(obstacle.x + 5, obstacle.y + obstacle.height, obstacle.width, 5);
+            
+            // Игрок (шарик с градиентом)
+            const ballGradient = ctx.createRadialGradient(
+                physics.x - 5, physics.y - 5, 5,
+                physics.x, physics.y, physics.radius
+            );
+            ballGradient.addColorStop(0, '#66b0ff');
+            ballGradient.addColorStop(1, '#3182ce');
+            
+            ctx.beginPath();
+            ctx.arc(physics.x, physics.y, physics.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ballGradient;
+            ctx.fill();
+            
+            // Глазки
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(physics.x - 7, physics.y - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(physics.x + 7, physics.y - 5, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#0a0c0f';
+            ctx.beginPath();
+            ctx.arc(physics.x - 7, physics.y - 5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(physics.x + 7, physics.y - 5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ротик (улыбка, если не прыгает)
+            ctx.beginPath();
+            if (physics.isJumping) {
+                ctx.arc(physics.x, physics.y + 5, 8, 0, Math.PI); // удивление
+            } else {
+                ctx.arc(physics.x, physics.y + 5, 8, 0.1, Math.PI - 0.1); // улыбка
+            }
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Блик
+            ctx.beginPath();
+            ctx.arc(physics.x - 5, physics.y - 5, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fill();
+            
+            // Тень
+            ctx.beginPath();
+            ctx.ellipse(physics.x + 5, physics.y + physics.radius + 5, 10, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fill();
+            
+            // Частицы
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = `hsl(${p.life * 60}, 100%, 50%)`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+            
+            // Информация о локации
+            ctx.fillStyle = '#a0aec0';
+            ctx.font = '14px Rajdhani';
+            ctx.fillText(`Локация: ${currentLocation.name}`, 10, 30);
+        }
+        
+        // Игровой цикл
+        function gameLoop() {
+            if (gameActive) {
+                updatePhysics();
+                draw();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+        
+        gameLoop();
+        
+        // Проверка ответа
+        function checkAnswer() {
+            if (!gameActive) {
+                alert('Игра окончена! Обновите страницу для новой игры.');
+                return;
+            }
+            
+            if (jumpAnimationActive) {
+                alert('Подожди, шарик еще прыгает!');
+                return;
+            }
+            
+            const value = parseFloat(document.getElementById('userValue').value);
+            if (isNaN(value)) {
+                alert('Пожалуйста, введите число!');
+                return;
+            }
+            
+            const checkBtn = document.getElementById('checkBtn');
+            checkBtn.disabled = true;
+            checkBtn.textContent = 'ПРОВЕРКА...';
+            
+            fetch('/check_game', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: value })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messageDiv = document.getElementById('message');
+                
+                if (data.success) {
+                    currentScore = data.score;
+                    bestScore = data.best_score;
+                    currentLevel = data.level;
+                    
+                    document.getElementById('currentScore').textContent = currentScore;
+                    document.getElementById('bestScore').textContent = bestScore;
+                    document.getElementById('currentLevel').textContent = currentLevel;
+                    document.getElementById('levelBadge').textContent = `УРОВЕНЬ ${currentLevel}`;
+                    
+                    messageDiv.className = 'message success';
+                    messageDiv.innerHTML = `✅ ПРАВИЛЬНО! +${data.points_earned} БАЛЛОВ. УРОВЕНЬ ${currentLevel}!`;
+                    
+                    // Сохраняем новое задание
+                    pendingNewChallenge = data.new_challenge;
+                    
+                    // Запускаем анимацию прыжка
+                    performJumpAnimation();
+                    
+                } else {
+                    messageDiv.className = 'message failure';
+                    messageDiv.innerHTML = `
+                        ❌ НЕПРАВИЛЬНО! ИГРА ОКОНЧЕНА.<br>
+                        ВАШ СЧЕТ: ${data.score}<br>
+                        ПРАВИЛЬНЫЙ ОТВЕТ: ${data.correct_answer}
+                    `;
+                    
+                    gameActive = false;
+                    checkBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        if (confirm('Хотите сыграть еще раз?')) {
+                            location.reload();
+                        }
+                    }, 3000);
+                }
+                
+                document.getElementById('userValue').value = '';
+                checkBtn.disabled = false;
+                checkBtn.textContent = 'ПРОВЕРИТЬ';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка. Попробуйте снова.');
+                checkBtn.disabled = false;
+                checkBtn.textContent = 'ПРОВЕРИТЬ';
+            });
+        }
+        
+        // Обработка Enter
+        document.getElementById('userValue').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && gameActive && !jumpAnimationActive) {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>

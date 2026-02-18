@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обучение физике в играх</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Playfair+Display:wght@400;600;700&family=Rajdhani:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background: #0a0c0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Анимированный фон */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.15;
+        }
+        
+        .floating-object {
+            position: absolute;
+            filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.3));
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .object1 { left: 5%; animation-duration: 25s; }
+        .object2 { left: 25%; animation-duration: 30s; }
+        .object3 { left: 45%; animation-duration: 22s; }
+        
+        /* Градиентный оверлей */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, rgba(102, 176, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(255, 170, 102, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 12, 15, 0.7);
+            border-radius: 60px;
+            padding: 50px;
+            border: 1px solid rgba(102, 176, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #66b0ff, #8a6eff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(102, 176, 255, 0.5);
+            letter-spacing: 4px;
+            animation: titleGlow 3s ease-in-out infinite;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #66b0ff, #ffaa66, #66b0ff, transparent);
+            animation: lineMove 3s linear infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 170, 102, 0.5)); }
+        }
+        
+        @keyframes lineMove {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+        
+        .back-btn {
+            background: rgba(45, 55, 72, 0.8);
+            border: 2px solid #4a5568;
+            color: #e0e0e0;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .back-btn:hover {
+            background: #4a5568;
+            border-color: #66b0ff;
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 176, 255, 0.3);
+        }
+        
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .content-card {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.8), rgba(45, 55, 72, 0.8));
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            border-image: linear-gradient(135deg, #66b0ff, #ffaa66);
+            border-image-slice: 1;
+            border-radius: 30px;
+            padding: 40px;
+            margin: 30px auto;
+            max-width: 1000px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(102, 176, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 176, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .content-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #f0f4fa;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-text p {
+            margin-bottom: 25px;
+        }
+        
+        .content-text a {
+            color: #ffaa66;
+            text-decoration: none;
+            border-bottom: 1px dashed #ffaa66;
+            transition: all 0.3s;
+        }
+        
+        .content-text a:hover {
+            color: #66b0ff;
+            border-bottom-color: #66b0ff;
+            text-shadow: 0 0 10px rgba(102, 176, 255, 0.5);
+        }
+        
+        .content-text ul, .content-text ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+        
+        .content-text li {
+            margin-bottom: 12px;
+            position: relative;
+            list-style-type: none;
+        }
+        
+        .content-text li::before {
+            content: '▹';
+            color: #ffaa66;
+            position: absolute;
+            left: -25px;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px #ffaa66;
+        }
+        
+        .video-link {
+            background: rgba(102, 176, 255, 0.1);
+            border: 1px solid #66b0ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s;
+        }
+        
+        .video-link:hover {
+            background: rgba(102, 176, 255, 0.2);
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(102, 176, 255, 0.3);
+        }
+        
+        .video-link a {
+            font-size: 1.4rem;
+            display: block;
+        }
+        
+        .highlight-block {
+            background: rgba(102, 176, 255, 0.1);
+            border-left: 5px solid #ffaa66;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 20px 20px 0;
+            font-size: 1.3rem;
+            color: #e0e0e0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            color: #718096;
+            font-size: 1rem;
+            border-top: 1px solid rgba(102, 176, 255, 0.2);
+            padding-top: 25px;
+            text-align: center;
+            width: 100%;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .footer p {
+            margin: 8px 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .date {
+            color: #ffaa66;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .glow-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #66b0ff;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: particleFloat 10s infinite linear;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 40px 0 20px;
+            background: linear-gradient(135deg, #66b0ff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-background">
+        <svg class="floating-object object1" width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="20" height="16" rx="2" stroke="#66b0ff" stroke-width="1.5"/>
+            <circle cx="12" cy="10" r="2" fill="#ffaa66"/>
+        </svg>
+        
+        <svg class="floating-object object2" width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20L20 20" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 4L12 16" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        
+        <svg class="floating-object object3" width="130" height="130" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6L20 6" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 12L20 12" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+    
+    <div class="gradient-overlay"></div>
+    
+    <div class="container">
+        <button class="back-btn" onclick="location.href='/'">← НА ГЛАВНУЮ</button>
+        
+        <h1>ОБУЧЕНИЕ ФИЗИКЕ В ИГРАХ</h1>
+        
+        <div class="content-card">
+            <div class="content-text">
+                <div class="section-title">ОСНОВЫ ФИЗИКИ В ИГРАХ</div>
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=4H3Qjz3q0wA" target="_blank">Physics for Game Developers - YouTube</a>
+                </div>
+                <p>Это видео объясняет основные принципы физики, которые применяются в разработке игр.</p>
+
+                <div class="section-title">UNITY</div>
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=JgkX8U6c2bM" target="_blank">Unity Physics Tutorial | Beginner to Advanced</a>
+                </div>
+                <p>Подробный курс по физике в Unity, охватывающий все от основ до более сложных тем.</p>
+                
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=K0i5m8g8B6I" target="_blank">Unity 2D Physics Tutorial</a>
+                </div>
+                <p>Урок по созданию физики в 2D-играх с использованием Unity.</p>
+
+                <div class="section-title">UNREAL ENGINE</div>
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=1QWzVd7v5kI" target="_blank">Unreal Engine Physics Tutorial</a>
+                </div>
+                <p>Это видео знакомит с основами работы с физикой в Unreal Engine.</p>
+                
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=FzD8B8yRZ4A" target="_blank">Chaos Physics in Unreal Engine 4</a>
+                </div>
+                <p>Углубленное руководство по использованию Chaos Physics в Unreal Engine.</p>
+
+                <div class="section-title">BOX2D</div>
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=Z6f4K3TzL7c" target="_blank">Box2D Physics Tutorial for Beginners</a>
+                </div>
+                <p>Введение в Box2D и создание простых физических объектов.</p>
+
+                <div class="section-title">ОБЩИЕ КОНЦЕПЦИИ И АЛГОРИТМЫ</div>
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=H1tVbKxY9a0" target="_blank">Game Physics: Introduction to Rigid Body Dynamics</a>
+                </div>
+                <p>Видео объясняет основы динамики твердых тел и их применение в играх.</p>
+                
+                <div class="video-link">
+                    <a href="https://www.youtube.com/watch?v=unlW7hC0IuA" target="_blank">Understanding Game Physics: Collision Detection and Response</a>
+                </div>
+                <p>Углубленное объяснение коллизий и методов обработки столкновений.</p>
+
+                <div class="highlight-block">
+                    <strong>Заключение:</strong> Эти видео помогут вам лучше понять, как реализовать физику в играх, будь то с использованием Unity, Unreal Engine или других технологий. Рекомендуется просмотреть их в порядке, чтобы постепенно углублять свои знания.
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Создали студенты Томского Техникума Информационных Технологий 452 группы Строганов Максим и Мартыненко Степан</p>
+            <p class="date">2026 год</p>
+        </div>
+    </div>
+    
+    <script>
+        function createParticles() {
+            const particlesContainer = document.createElement('div');
+            particlesContainer.style.position = 'fixed';
+            particlesContainer.style.top = '0';
+            particlesContainer.style.left = '0';
+            particlesContainer.style.width = '100%';
+            particlesContainer.style.height = '100%';
+            particlesContainer.style.pointerEvents = 'none';
+            particlesContainer.style.zIndex = '5';
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'glow-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = 15 + Math.random() * 10 + 's';
+                particlesContainer.appendChild(particle);
+            }
+            
+            document.body.appendChild(particlesContainer);
+        }
+        
+        createParticles();
+    </script>
+</body>
+</html>

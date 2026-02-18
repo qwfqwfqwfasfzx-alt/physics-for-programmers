@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Материалы для разработчика</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Playfair+Display:wght@400;600;700&family=Rajdhani:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Playfair Display', serif;
+            background: #0a0c0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Анимированный фон */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.15;
+        }
+        
+        .floating-object {
+            position: absolute;
+            filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.3));
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        .object1 { left: 5%; animation-duration: 25s; }
+        .object2 { left: 25%; animation-duration: 30s; }
+        .object3 { left: 45%; animation-duration: 22s; }
+        .object4 { left: 65%; animation-duration: 28s; }
+        .object5 { left: 85%; animation-duration: 35s; }
+        
+        /* Градиентный оверлей */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 50%, rgba(102, 176, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(255, 170, 102, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            animation: gradientShift 15s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 12, 15, 0.7);
+            border-radius: 60px;
+            padding: 50px;
+            border: 1px solid rgba(102, 176, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, #66b0ff, #8a6eff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(102, 176, 255, 0.5);
+            letter-spacing: 4px;
+            animation: titleGlow 3s ease-in-out infinite;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #66b0ff, #ffaa66, #66b0ff, transparent);
+            animation: lineMove 3s linear infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(102, 176, 255, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 170, 102, 0.5)); }
+        }
+        
+        @keyframes lineMove {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+        
+        .back-btn {
+            background: rgba(45, 55, 72, 0.8);
+            border: 2px solid #4a5568;
+            color: #e0e0e0;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-bottom: 30px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .back-btn:hover {
+            background: #4a5568;
+            border-color: #66b0ff;
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(102, 176, 255, 0.3);
+        }
+        
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Стили для контента */
+        .content-card {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.8), rgba(45, 55, 72, 0.8));
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            border-image: linear-gradient(135deg, #66b0ff, #ffaa66);
+            border-image-slice: 1;
+            border-radius: 30px;
+            padding: 40px;
+            margin: 30px auto;
+            max-width: 1000px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(102, 176, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 176, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .content-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            line-height: 1.9;
+            color: #f0f4fa;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content-text p {
+            margin-bottom: 25px;
+        }
+        
+        .content-text a {
+            color: #ffaa66;
+            text-decoration: none;
+            border-bottom: 1px dashed #ffaa66;
+            transition: all 0.3s;
+        }
+        
+        .content-text a:hover {
+            color: #66b0ff;
+            border-bottom-color: #66b0ff;
+            text-shadow: 0 0 10px rgba(102, 176, 255, 0.5);
+        }
+        
+        .content-text ul, .content-text ol {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+        
+        .content-text li {
+            margin-bottom: 12px;
+            position: relative;
+            list-style-type: none;
+        }
+        
+        .content-text li::before {
+            content: '▹';
+            color: #ffaa66;
+            position: absolute;
+            left: -25px;
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px #ffaa66;
+        }
+        
+        .highlight-block {
+            background: rgba(102, 176, 255, 0.1);
+            border-left: 5px solid #ffaa66;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 0 20px 20px 0;
+            font-size: 1.2rem;
+            color: #e0e0e0;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .highlight-block::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 170, 102, 0.1));
+        }
+        
+        .code-block {
+            background: #1a1e24;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #66b0ff;
+            box-shadow: 0 0 20px rgba(102, 176, 255, 0.2);
+            color: #ffaa66;
+            font-size: 1.1rem;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            color: #718096;
+            font-size: 1rem;
+            border-top: 1px solid rgba(102, 176, 255, 0.2);
+            padding-top: 25px;
+            text-align: center;
+            width: 100%;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        
+        .footer p {
+            margin: 8px 0;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        .date {
+            color: #ffaa66;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .glow-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #66b0ff;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: particleFloat 10s infinite linear;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            background: linear-gradient(135deg, #66b0ff, #ffaa66);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="animated-background">
+        <svg class="floating-object object1" width="150" height="150" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="20" height="16" rx="2" stroke="#66b0ff" stroke-width="1.5"/>
+            <circle cx="12" cy="10" r="2" fill="#ffaa66"/>
+        </svg>
+        
+        <svg class="floating-object object2" width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20L20 20" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 4L12 16" stroke="#ffaa66" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        
+        <svg class="floating-object object3" width="130" height="130" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 6L20 6" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 12L20 12" stroke="#66b0ff" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </div>
+    
+    <div class="gradient-overlay"></div>
+    
+    <div class="container">
+        <button class="back-btn" onclick="location.href='/'">← НА ГЛАВНУЮ</button>
+        
+        <h1>МАТЕРИАЛЫ ДЛЯ РАЗРАБОТЧИКА</h1>
+        
+        <div class="content-card">
+            <div class="content-text">
+                <div class="section-title">ФИЗИКА</div>
+                <ul>
+                    <li>Основы классической механики: законы Ньютона, кинематика, динамика.</li>
+                    <li>"Physics for Game Developers" Дэвида Брауна — хорошее введение в физику с акцентом на игры.</li>
+                </ul>
+
+                <div class="section-title">РЕСУРСЫ ПО ПРОГРАММИРОВАНИЮ</div>
+                <ul>
+                    <li><span class="highlight">Языки программирования:</span> Знания C++, C#, Python или других языков, используемых в игровых движках.</li>
+                    <li>Курсы по языкам программирования на платформах, таких как Coursera, Udemy или edX.</li>
+                    <li><span class="highlight">Алгоритмы и структуры данных:</span> Изучение алгоритмов для работы с коллизиями и пространственными структурами (например, деревьями, сетками).</li>
+                    <li>Книги, такие как "Introduction to Algorithms" Томаса Х. Кормена.</li>
+                </ul>
+
+                <div class="section-title">ИГРОВЫЕ ДВИЖКИ И ФИЗИЧЕСКИЕ БИБЛИОТЕКИ</div>
+                <ul>
+                    <li><span class="highlight">Игровые движки:</span>
+                        <ul style="margin-top: 10px;">
+                            <li>Unity: Использует физический движок PhysX. <a href="https://docs.unity3d.com/Manual/PhysicsSection.html" target="_blank">Документация Unity по физике</a></li>
+                            <li>Unreal Engine: Использует Chaos Physics. <a href="https://docs.unrealengine.com/en-US/Physics/index.html" target="_blank">Документация Unreal Engine по физике</a></li>
+                        </ul>
+                    </li>
+                    <li><span class="highlight">Физические библиотеки:</span>
+                        <ul style="margin-top: 10px;">
+                            <li>Box2D: Для 2D-игр. <a href="https://box2d.org/documentation.html" target="_blank">Документация Box2D</a></li>
+                            <li>Bullet Physics: Для 3D-игр. <a href="https://pybullet.org/wordpress/" target="_blank">Документация Bullet Physics</a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <div class="section-title">ОНЛАЙН-КУРСЫ И ВИДЕО</div>
+                <ul>
+                    <li>Платформы, такие как Coursera, Udemy, Pluralsight и Khan Academy предлагают курсы по разработке игр, программированию и физике.</li>
+                    <li>YouTube-каналы, такие как Brackeys (для Unity) или Unreal Engine, предлагают видеоуроки по созданию физических эффектов.</li>
+                </ul>
+
+                <div class="section-title">ИНСТРУМЕНТЫ РАЗРАБОТКИ</div>
+                <ul>
+                    <li>IDE и редакторы кода: Visual Studio (для C++), Visual Studio Code (для C#), JetBrains Rider.</li>
+                    <li>Системы контроля версий: Git для управления версиями кода.</li>
+                    <li>Дебаггеры и профайлеры: Инструменты для отладки и анализа производительности игры.</li>
+                </ul>
+
+                <div class="section-title">СООБЩЕСТВА И ФОРУМЫ</div>
+                <ul>
+                    <li>Участие в сообществах разработчиков игр, таких как Stack Overflow, Reddit (например, r/gamedev) и специализированные форумы по Unity или Unreal Engine.</li>
+                    <li>Присоединение к группам в Discord или Slack, где можно обмениваться опытом и получать советы от других разработчиков.</li>
+                </ul>
+
+                <div class="section-title">ПРИМЕРЫ КОДА И ПРОЕКТЫ</div>
+                <ul>
+                    <li>Изучение открытых проектов на GitHub, связанных с физикой в играх.</li>
+                    <li>Участие в хакатонах или конкурсах (например, Ludum Dare), чтобы получить практический опыт.</li>
+                </ul>
+
+                <div class="highlight-block">
+                    <strong>Заключение:</strong> Управление физикой в играх требует комплексного подхода и глубоких знаний в различных областях. Используя указанные ресурсы и материалы, разработчики могут создать реалистичную физику в своих играх и улучшить качество игрового процесса.
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Создали студенты Томского Техникума Информационных Технологий 452 группы Строганов Максим и Мартыненко Степан</p>
+            <p class="date">2026 год</p>
+        </div>
+    </div>
+    
+    <script>
+        function createParticles() {
+            const particlesContainer = document.createElement('div');
+            particlesContainer.style.position = 'fixed';
+            particlesContainer.style.top = '0';
+            particlesContainer.style.left = '0';
+            particlesContainer.style.width = '100%';
+            particlesContainer.style.height = '100%';
+            particlesContainer.style.pointerEvents = 'none';
+            particlesContainer.style.zIndex = '5';
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'glow-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                particle.style.animationDuration = 15 + Math.random() * 10 + 's';
+                particlesContainer.appendChild(particle);
+            }
+            
+            document.body.appendChild(particlesContainer);
+        }
+        
+        createParticles();
+    </script>
+</body>
+</html>
